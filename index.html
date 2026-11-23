@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Neat Forex EAs | Institutional Expert Advisors</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <!-- Navbar -->
+  <header class="navbar">
+    <div class="nav-left">
+      <button id="menu-btn" class="menu-btn" aria-label="Open Navigation">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+      <div class="logo" onclick="showSection('home-section')">Neat Forex EAs</div>
+    </div>
+    <nav class="desktop-nav">
+      <a href="#" class="nav-link active" data-target="home-section">Home</a>
+      <a href="#" class="nav-link" data-target="products-section">Expert Advisors</a>
+      <a href="#" class="nav-link" data-target="contact-section">Support</a>
+    </nav>
+  </header>
+
+  <!-- Sidebar Drawer -->
+  <div id="sidebar" class="sidebar">
+    <div class="sidebar-header">
+      <h3>Neat Forex EAs Menu</h3>
+      <button id="close-btn" class="close-btn">&times;</button>
+    </div>
+    <ul class="sidebar-links">
+      <li><a href="#" class="sidebar-link active" data-target="home-section"><i class="fa-solid fa-house"></i> Home</a></li>
+      <li><a href="#" class="sidebar-link" data-target="products-section"><i class="fa-solid fa-robot"></i> Expert Advisors</a></li>
+      <li><a href="#" class="sidebar-link" data-target="contact-section"><i class="fa-solid fa-headset"></i> Support</a></li>
+    </ul>
+    <div class="sidebar-support-note">
+      <i class="fa-solid fa-envelope"></i>
+      <a href="mailto:support@neatforexeas.com">support@neatforexeas.com</a>
+    </div>
+  </div>
+  <div id="backdrop" class="backdrop"></div>
+
+  <!-- Live Purchase Pulse Toast -->
+  <div id="purchase-pulse-toast" class="purchase-pulse-toast" aria-live="polite">
+    <span class="pulse-dot"></span>
+    <span id="purchase-pulse-text">A purchase of $199.00 has been made</span>
+  </div>
+
+  <!-- Main Container -->
+  <main class="main-container">
+
+    <!-- HOME SECTION -->
+    <section id="home-section" class="content-section active">
+      <div class="hero">
+        <h1>Algorithmic Precision for Traders</h1>
+        <p class="subtitle">Deploy institutional-grade MetaTrader 5 Expert Advisors engineered for maximum edge, strict risk control, and flawless automated execution.</p>
+      </div>
+
+      <!-- Liveness Strip: Drifting EA Icon Thumbnails with Edge Fade -->
+      <div class="ea-liveness-strip" aria-label="Live EA activity strip">
+        <div class="ea-liveness-label">
+          <i class="fa-solid fa-wave-square"></i> Fleet Activity
+        </div>
+        <div class="ea-liveness-viewport">
+          <div id="ea-icon-stream" class="ea-icon-stream">
+            <!-- Populated dynamically via JS -->
+          </div>
+        </div>
+      </div>
+
+      <div class="services-flow">
+        <div class="service-row-card">
+          <div class="service-row-img">
+            <img src="images/service-execution.jpg" alt="MT5 Algorithms">
+          </div>
+          <div class="service-row-text">
+            <h3>Native MQL5 Execution</h3>
+            <p>Built directly for MetaTrader 5 with microsecond execution speeds, zero slippage tolerances, and built-in 5-device server licensing protection.</p>
+          </div>
+        </div>
+
+        <div class="service-row-card">
+          <div class="service-row-img">
+            <img src="images/service-automation.jpg" alt="Strategy Development">
+          </div>
+          <div class="service-row-text">
+            <h3>Custom Strategy Automation</h3>
+            <p>Turn your manual trading rules into a robust, backtested, and fully automated Expert Advisor built by professional MQL5 programmers.</p>
+          </div>
+        </div>
+
+        <div class="service-row-card">
+          <div class="service-row-img">
+            <img src="images/service-risk.jpg" alt="Risk Controls">
+          </div>
+          <div class="service-row-text">
+            <h3>Advanced Risk Protocols</h3>
+            <p>Every algorithm features automated spread filters, news event breakers, and dynamic compound lot-scaling to protect capital during high-impact market shifts.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- EXPERT ADVISORS / PRODUCTS SECTION -->
+    <section id="products-section" class="content-section">
+      <div class="hero">
+        <h1>Expert Advisor Fleet</h1>
+        <p class="subtitle">Filter our institutional algorithms by name, asset pair, MQL5 strategy type (Hedging, Martingale, Averaging), or budget range.</p>
+      </div>
+
+      <!-- Collapsible Filter Drawer (Whop-style toggle) -->
+      <div class="filter-toolbar">
+        <button type="button" id="filter-toggle-btn" class="filter-toggle-btn" aria-expanded="false" aria-controls="filter-drawer">
+          <i class="fa-solid fa-sliders"></i>
+          <span>Filters</span>
+          <span id="active-filter-count" class="filter-count-pill hidden">0</span>
+          <i id="filter-chevron" class="fa-solid fa-chevron-down filter-chevron"></i>
+        </button>
+        <button type="button" class="reset-filter-btn inline-reset-btn" onclick="resetFilters()">Reset</button>
+      </div>
+
+      <div id="filter-drawer" class="filter-drawer">
+        <div class="filter-bar">
+          <div class="filter-group">
+            <label for="filter-name">Search by Name</label>
+            <input type="text" id="filter-name" placeholder="e.g. Glisten, Trend..." oninput="filterProducts()">
+          </div>
+          <div class="filter-group">
+            <label for="filter-strategy">Strategy Type</label>
+            <select id="filter-strategy" onchange="filterProducts()">
+              <option value="all">All Strategies</option>
+              <option value="Scalper">Scalper</option>
+              <option value="Trend">Trend Following</option>
+              <option value="Averaging">Averaging / Grid</option>
+              <option value="Hedging">Hedging</option>
+              <option value="Martingale">Martingale</option>
+              <option value="Breakout">Breakout</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label for="filter-pair">Currency Pair</label>
+            <select id="filter-pair" onchange="filterProducts()">
+              <option value="all">All Assets</option>
+              <option value="XAUUSD">XAUUSD (Gold)</option>
+              <option value="EURUSD">EURUSD / GBPUSD</option>
+              <option value="Multi">Multi-Currency</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label for="filter-budget">Budget Range</label>
+            <select id="filter-budget" onchange="filterProducts()">
+              <option value="all">All Budgets</option>
+              <option value="0-150">$0 - $150</option>
+              <option value="151-200">$151 - $200</option>
+              <option value="201-500">$201 - $500</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Products Grid -->
+      <div id="products-grid-container" class="products-grid">
+        <!-- Rendered dynamically via JavaScript -->
+      </div>
+    </section>
+
+    <!-- INDIVIDUAL EA SHOWCASE PAGE -->
+    <section id="product-detail-section" class="content-section">
+      <button class="back-btn" onclick="showSection('products-section')"><i class="fa-solid fa-arrow-left"></i> Back to Fleet</button>
+
+      <div class="strategy-rules-container-full">
+        <div class="detail-top-header">
+          <span id="detail-badge" class="ea-badge-pill" style="position: static; display: inline-block;">Flagship</span>
+        </div>
+        <div class="detail-inline-pic-wrap">
+          <img id="detail-img" src="" alt="EA Showcase Image">
+        </div>
+        <h2 id="detail-title">EA Title</h2>
+        <p id="detail-desc" style="color: #94a3b8; font-size: 0.95rem; line-height: 1.6; margin-bottom: 1.25rem;">Detailed description...</p>
+
+        <h3 style="font-size: 1rem; color: #38bdf8; font-weight: 700; margin-bottom: 0.75rem;"><i class="fa-solid fa-list-check"></i> Strategy Rules & Characteristics</h3>
+        <div class="floating-rules-grid" id="characteristics-container">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+
+      <div class="showcase-bottom-row-two">
+        <div class="showcase-sub-box">
+          <div class="sub-box-header">
+            <h3><i class="fa-solid fa-shield-halved" style="color: #34d399;"></i> License & Purchase</h3>
+            <p>Instant download, email receipt & 5-device key.</p>
+          </div>
+          <div class="pricing-options-stack" id="pricing-options-stack">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+
+        <div class="showcase-sub-box">
+          <div class="sub-box-header">
+            <h3><i class="fa-solid fa-chart-line"></i> Verified Performance</h3>
+            <p>Audited track record on Myfxbook.</p>
+          </div>
+          <div class="metrics-mini-grid">
+            <div class="metric-mini-item">
+              <div class="metric-mini-label">Gain</div>
+              <div class="metric-mini-val" id="metric-gain">+342%</div>
+            </div>
+            <div class="metric-mini-item">
+              <div class="metric-mini-label">Profit Factor</div>
+              <div class="metric-mini-val" id="metric-pf">2.45</div>
+            </div>
+            <div class="metric-mini-item">
+              <div class="metric-mini-label">Max Drawdown</div>
+              <div class="metric-mini-val" id="metric-dd">8.2%</div>
+            </div>
+          </div>
+          <a id="myfxbook-link-card" href="https://www.myfxbook.com/" target="_blank" rel="noopener noreferrer" class="myfxbook-verify-box">
+            <div class="myfxbook-verify-left">
+              <span class="myfxbook-badge-icon"><i class="fa-solid fa-arrow-trend-up"></i></span>
+              <div>
+                <div class="myfxbook-verify-title">View Live Results on Myfxbook</div>
+                <div id="myfxbook-verify-sub" class="myfxbook-verify-sub">Opens verified statement for this EA</div>
+              </div>
+            </div>
+            <i class="fa-solid fa-arrow-up-right-from-square myfxbook-ext-icon"></i>
+          </a>
+        </div>
+      </div>
+
+      <div class="youtube-sliding-section">
+        <h3 style="font-size: 1.05rem; font-weight: 700; color: #38bdf8;"><i class="fa-brands fa-youtube" style="color: #ef4444;"></i> Historical Backtest & Strategy Videos</h3>
+        <p style="font-size: 0.82rem; color: #94a3b8; margin-top: 0.2rem;">Scroll horizontally to watch backtest executions and setup walkthroughs.</p>
+
+        <div class="videos-horizontal-strip">
+          <div class="video-thumb-card">
+            <h4>1. Stress Test Walkthrough</h4>
+            <div class="video-wrapper-small">
+              <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" title="Video 1" frameborder="0" allowfullscreen></iframe>
+            </div>
+          </div>
+          <div class="video-thumb-card">
+            <h4>2. Live ECN Broker Feed</h4>
+            <div class="video-wrapper-small">
+              <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" title="Video 2" frameborder="0" allowfullscreen></iframe>
+            </div>
+          </div>
+          <div class="video-thumb-card">
+            <h4>3. Risk Management Guide</h4>
+            <div class="video-wrapper-small">
+              <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" title="Video 3" frameborder="0" allowfullscreen></iframe>
+            </div>
+          </div>
+          <div class="video-thumb-card">
+            <h4>4. Multi-Pair Setup</h4>
+            <div class="video-wrapper-small">
+              <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" title="Video 4" frameborder="0" allowfullscreen></iframe>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SUPPORT & EMAIL SECTION -->
+    <section id="contact-section" class="content-section">
+      <div class="hero" style="border-left-color: #34d399;">
+        <h1>Support Desk</h1>
+        <p class="subtitle">Reach our team directly via live chat or support email for licensing, setup, and custom EA inquiries.</p>
+      </div>
+
+      <div class="support-layout-grid">
+        <div class="support-card">
+          <div class="support-card-header">
+            <i class="fa-solid fa-envelope-open-text"></i>
+            <div>
+              <h3>Support Email</h3>
+              <p>Direct ticket & licensing assistance</p>
+            </div>
+          </div>
+          <a href="mailto:support@neatforexeas.com" class="support-email-link">support@neatforexeas.com</a>
+          <p class="support-meta">Typical response time: under 24 hours on business days.</p>
+        </div>
+
+        <div class="support-card">
+          <div class="support-card-header">
+            <i class="fa-solid fa-comments"></i>
+            <div>
+              <h3>Live Chat Support</h3>
+              <p>Powered by tawk.to · NeatForexEas</p>
+            </div>
+          </div>
+          <div id="live-chat-widget-slot" class="live-chat-slot">
+            <p class="chat-placeholder-title"><i class="fa-solid fa-circle-dot"></i> Live Support Desk Online</p>
+            <p class="chat-placeholder-sub">
+              Our tawk.to chat widget is connected for <strong>neatforexeas.com</strong>. Click below to open the live chat window.
+            </p>
+            <button type="button" class="btn buy" onclick="triggerLiveChat()">
+              <i class="fa-solid fa-comment-dots"></i> Launch Chat Widget
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TERMS OF SERVICE SECTION -->
+    <section id="terms-section" class="content-section">
+      <div class="policy-card-white">
+        <h2>Terms of Service</h2>
+        <div class="policy-date">Last updated: November 2026</div>
+        <p>By downloading, purchasing, or activating any Neat Forex EAs Expert Advisor, you agree to comply with our institutional licensing and risk disclosure terms.</p>
+        <h3>1. License & Device Limit</h3>
+        <p>Each license grants activation rights for up to 5 distinct MetaTrader 5 accounts or hardware devices as verified by our automated licensing server upon startup.</p>
+        <h3>2. Financial Risk Warning</h3>
+        <p>Trading leveraged financial instruments involves substantial risk of loss. Past algorithmic performance does not guarantee future results.</p>
+      </div>
+    </section>
+
+    <!-- PRIVACY POLICY SECTION -->
+    <section id="privacy-section" class="content-section">
+      <div class="policy-card-white">
+        <h2>Privacy Policy</h2>
+        <div class="policy-date">Last updated: November 2026</div>
+        <p>Neat Forex EAs respects client confidentiality and ensures secure handling of transaction metadata.</p>
+        <h3>1. Information Processing</h3>
+        <p>Checkout and payments are processed via PayPal and NOWPayments crypto gateway. We retain order identifiers, delivery email addresses, and assigned license keys necessary for delivery and device verification.</p>
+      </div>
+    </section>
+
+    <!-- REFUND POLICY SECTION -->
+    <section id="refund-section" class="content-section">
+      <div class="policy-card-white">
+        <h2>Refund & License Policy</h2>
+        <div class="policy-date">Last updated: November 2026</div>
+        <p>Due to the instantaneous digital delivery of compiled MQL5 binaries (.ex5) and license keys, all sales are final.</p>
+        <h3>1. Free Trial Evaluation</h3>
+        <p>We provide fully functional demo versions for live Expert Advisors. Clients are strongly encouraged to test on demo accounts prior to purchasing lifetime or monthly subscriptions.</p>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Official Footer -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div class="footer-col footer-brand-col">
+        <div class="footer-logo">Neat Forex EAs</div>
+        <p>Institutional automated trading solutions engineered for MetaTrader 5 with strict risk controls and verified track records.</p>
+        <div class="footer-social-row" aria-label="Official community and results links">
+          <a href="https://t.me/neatforexeas" target="_blank" rel="noopener noreferrer" class="footer-social-btn" title="Telegram" aria-label="Telegram">
+            <i class="fa-brands fa-telegram"></i>
+          </a>
+          <a href="https://discord.gg/neatforexeas" target="_blank" rel="noopener noreferrer" class="footer-social-btn" title="Discord" aria-label="Discord">
+            <i class="fa-brands fa-discord"></i>
+          </a>
+          <a href="https://www.myfxbook.com/" target="_blank" rel="noopener noreferrer" class="footer-social-btn" title="Myfxbook" aria-label="Myfxbook">
+            <i class="fa-solid fa-chart-column"></i>
+          </a>
+          <a href="https://www.youtube.com/@neatforexeas" target="_blank" rel="noopener noreferrer" class="footer-social-btn" title="YouTube" aria-label="YouTube">
+            <i class="fa-brands fa-youtube"></i>
+          </a>
+        </div>
+      </div>
+
+      <div class="footer-col">
+        <h4>Expert Advisors</h4>
+        <ul id="footer-ea-list" class="footer-links">
+          <!-- Populated dynamically via JS -->
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>Store Policies</h4>
+        <ul class="footer-links">
+          <li><a href="#" data-target="terms-section" class="footer-nav-link">Terms of Service</a></li>
+          <li><a href="#" data-target="privacy-section" class="footer-nav-link">Privacy Policy</a></li>
+          <li><a href="#" data-target="refund-section" class="footer-nav-link">Refund Policy</a></li>
+          <li><a href="#" data-target="contact-section" class="footer-nav-link">Support</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2026 Neat Forex EAs (neatforexeas.com). All rights reserved. High Risk Trading Disclaimer applies.</p>
+    </div>
+  </footer>
+
+  <!-- Checkout Modal (PayPal / PayPal Card + NOWPayments Crypto) -->
+  <div id="checkout-modal" class="modal">
+    <div class="modal-box">
+      <span class="close-modal" onclick="closeCheckout()">&times;</span>
+      <h3 id="modal-product-title" style="color: #f8fafc; font-size: 1.25rem; font-weight: 700;">Secure Checkout</h3>
+      <div id="modal-product-price" class="modal-price-display"></div>
+
+      <!-- Buyer Email Input for AWS SES Delivery -->
+      <div id="checkout-email-group" class="checkout-email-group">
+        <label for="checkout-email">Email for License Key &amp; .ex5 Download Link</label>
+        <input type="email" id="checkout-email" placeholder="you@example.com" autocomplete="email" required>
+      </div>
+
+      <!-- Payment Method Selector -->
+      <div id="payment-method-selector" class="payment-method-tabs">
+        <button type="button" id="tab-paypal" class="payment-tab active" onclick="switchPaymentMethod('paypal')">
+          <i class="fa-brands fa-paypal"></i> PayPal / Card
+        </button>
+        <button type="button" id="tab-crypto" class="payment-tab" onclick="switchPaymentMethod('crypto')">
+          <i class="fa-brands fa-bitcoin"></i> Crypto (NOWPayments)
+        </button>
+      </div>
+
+      <div id="loading-spinner" class="hidden">
+        <div class="spinner"></div>
+        <p id="loading-status-text" style="color: #94a3b8; font-size: 0.9rem;">Verifying payment &amp; sending license email...</p>
+      </div>
+
+      <!-- PayPal / PayPal Card Panel -->
+      <div id="paypal-panel" class="payment-panel">
+        <p class="payment-sub-hint">Pay securely with your PayPal balance or debit/credit card via PayPal.</p>
+        <div id="paypal-button-container"></div>
+      </div>
+
+      <!-- NOWPayments Crypto Panel -->
+      <div id="crypto-panel" class="payment-panel hidden">
+        <p class="payment-sub-hint">Select a coin to generate a NOWPayments invoice (BTC, ETH, USDT, LTC, SOL).</p>
+        <div class="crypto-currency-row">
+          <label for="crypto-currency-select">Pay With Coin</label>
+          <select id="crypto-currency-select">
+            <option value="usdttrc20">USDT (TRC20)</option>
+            <option value="btc">Bitcoin (BTC)</option>
+            <option value="eth">Ethereum (ETH)</option>
+            <option value="ltc">Litecoin (LTC)</option>
+            <option value="sol">Solana (SOL)</option>
+          </select>
+        </div>
+        <button type="button" id="create-crypto-invoice-btn" class="btn crypto-pay-btn" onclick="startNowPaymentsCheckout()">
+          <i class="fa-solid fa-coins"></i> Pay with Crypto
+        </button>
+
+        <div id="crypto-invoice-box" class="crypto-invoice-box hidden">
+          <p class="invoice-label">Send Exact Crypto Amount:</p>
+          <div id="crypto-pay-amount" class="crypto-amount-text">0.00 BTC</div>
+          <div class="crypto-address-box">
+            <code id="crypto-pay-address">bc1q...</code>
+          </div>
+          <p id="crypto-invoice-status" class="invoice-status-text">Waiting for payment...</p>
+          <div class="crypto-actions-row">
+            <a id="crypto-invoice-link" href="#" target="_blank" rel="noopener" class="btn demo">
+              <i class="fa-solid fa-arrow-up-right-from-square"></i> Open NOWPayments Page
+            </a>
+            <button type="button" class="btn buy" onclick="checkNowPaymentsStatus()">
+              <i class="fa-solid fa-rotate"></i> Check Payment
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div id="download-box" class="hidden">
+        <h4 style="color: #34d399; margin-bottom: 0.5rem;">🎉 Payment Successful!</h4>
+        <p style="color: #94a3b8; font-size: 0.88rem;">Your 5-Device License Key (also sent to your email):</p>
+        <div class="license-box-code">
+          <code id="display-license-key">NF-XXXX-XXXX</code>
+        </div>
+        <a id="final-download-btn" href="#" class="btn buy" style="width: 100%; margin-top: 0.5rem;"><i class="fa-solid fa-download"></i> Download .ex5 File Now</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- PayPal SDK -->
+  <script src="https://www.paypal.com/sdk/js?client-id=BAAiEuxvKOvh9QKzRNPnzUyl9v5jFnRsRkqiqwQMa_hKnqO4CV1FNBXCnnRE2ABQvsusreVXO6Otca9eLQ&currency=USD"></script>
+  <script src="script.js"></script>
+
+  <!--Start of Tawk.to Script-->
+  <script type="text/javascript">
+  var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+  (function(){
+  var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+  s1.async=true;
+  s1.src='https://embed.tawk.to/6b041ff876f9fb3cabb039f6/1k841pq1j';
+  s1.charset='UTF-8';
+  s1.setAttribute('crossorigin','*');
+  s0.parentNode.insertBefore(s1,s0);
+  })();
+  </script>
+  <!--End of Tawk.to Script-->
+</body>
+</html>
