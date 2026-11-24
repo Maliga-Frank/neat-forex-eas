@@ -6,7 +6,7 @@ const { S3Client, GetObjectCommand } = require('@aws-sdk/client-s3');
 const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
 
 const REGION = process.env.AWS_REGION || process.env.SES_REGION || 'us-east-1';
-const TABLE_NAME = process.env.DDB_TABLE_NAME || 'NeatForexLicenses';
+const TABLE_NAME = process.env.DDB_TABLE_NAME || 'neatforexeas-licenses';
 const SES_FROM_EMAIL = process.env.SES_FROM_EMAIL || 'no-reply@neatforexeas.com';
 const SUPPORT_EMAIL = process.env.SUPPORT_EMAIL || 'support@neatforexeas.com';
 const EX5_BUCKET = process.env.EX5_BUCKET || '';
