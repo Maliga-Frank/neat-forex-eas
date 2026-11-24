@@ -1,6 +1,6 @@
 // Replace with your API Gateway base URL (no trailing slash), e.g.:
 // https://abc123def.execute-api.us-east-1.amazonaws.com
-const API_BASE_URL = '';
+const API_BASE_URL = 'https://itbgtofruhenrtt6z2g2up34vq0ibksi.lambda-url.eu-north-1.on.aws'; //
 
 function apiUrl(routePath) {
   return `${API_BASE_URL}${routePath}`;
