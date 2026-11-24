@@ -5,7 +5,7 @@ import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
 import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
-const REGION = process.env.SES_REGION || 'eu-north-1';
+const REGION = process.env.AWS_REGION || process.env.SES_REGION || 'eu-north-1';
 const TABLE_NAME = process.env.DDB_TABLE_NAME || 'neatforexeas-licenses';
 const SES_FROM_EMAIL = process.env.SES_FROM_EMAIL || 'no-reply@neatforexeas.com';
 const SUPPORT_EMAIL = process.env.SUPPORT_EMAIL || 'support@neatforexeas.com';
