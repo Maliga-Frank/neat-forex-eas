@@ -12,6 +12,8 @@ const SUPPORT_EMAIL = process.env.SUPPORT_EMAIL || 'support@neatforexeas.com';
 const EX5_BUCKET = process.env.EX5_BUCKET || '';
 const DOWNLOAD_BASE_URL = process.env.DOWNLOAD_BASE_URL || '';
 const NOWPAYMENTS_API_URL = 'https://api.nowpayments.io/v1';
+const MAX_DEVICES = 5;
+const MONTHLY_DAYS = 30;
 
 const ddb = DynamoDBDocumentClient.from(new DynamoDBClient({ region: REGION }));
 const ses = new SESClient({ region: REGION });
@@ -51,6 +53,23 @@ function createDownloadToken(orderRef, productId) {
   return Buffer.from(`${orderRef}:${productId}:${Date.now()}`).toString('base64url');
 }
 
+function computeExpiresAt(tierName) {
+  const normalized = String(tierName || '').toLowerCase();
+  if (normalized.includes('month')) {
+    const exp = new Date();
+    exp.setUTCDate(exp.getUTCDate() + MONTHLY_DAYS);
+    return exp.toISOString();
+  }
+  return null; // Lifetime / non-expiring
+}
+
+function isLicenseExpired(expiresAt) {
+  if (!expiresAt) return false;
+  const expMs = Date.parse(expiresAt);
+  if (Number.isNaN(expMs)) return false;
+  return Date.now() > expMs;
+}
+
 async function buildDownloadUrl(baseUrl, downloadToken, product, isDemo = false) {
   if (EX5_BUCKET) {
     const key = isDemo ? product.demoFilename : product.filename;
@@ -64,8 +83,12 @@ async function buildDownloadUrl(baseUrl, downloadToken, product, isDemo = false)
   return `${baseUrl}/api/download/${downloadToken}`;
 }
 
-async function sendPurchaseEmail({ toEmail, product, tierName, price, licenseKey, downloadUrl }) {
+async function sendPurchaseEmail({ toEmail, product, tierName, price, licenseKey, expiresAt, downloadUrl }) {
   if (!toEmail || !SES_FROM_EMAIL) return;
+
+  const validityLine = expiresAt
+    ? `- Valid Until: ${expiresAt}`
+    : `- Validity: Lifetime (No expiration)`;
 
   const textBody = [
     `Thank you for your purchase of ${product.name} (${tierName})!`,
@@ -75,6 +98,7 @@ async function sendPurchaseEmail({ toEmail, product, tierName, price, licenseKey
     `- Plan: ${tierName}`,
     `- Amount Paid: $${price} USD`,
     `- 5-Device License Key: ${licenseKey}`,
+    validityLine,
     ``,
     `Download your .ex5 file here:`,
     `${downloadUrl}`,
@@ -94,7 +118,7 @@ async function sendPurchaseEmail({ toEmail, product, tierName, price, licenseKey
   }));
 }
 
-async function saveLicenseRecord({ licenseKey, productId, tierName, price, buyerEmail, orderId, downloadToken }) {
+async function saveLicenseRecord({ licenseKey, productId, tierName, price, buyerEmail, orderId, downloadToken, expiresAt }) {
   await ddb.send(new PutCommand({
     TableName: TABLE_NAME,
     Item: {
@@ -106,6 +130,7 @@ async function saveLicenseRecord({ licenseKey, productId, tierName, price, buyer
       orderId: String(orderId),
       downloadToken,
       devices: [],
+      expiresAt,
       createdAt: new Date().toISOString()
     },
     ConditionExpression: 'attribute_not_exists(licenseKey)'
@@ -174,6 +199,8 @@ exports.handler = async (event) => {
       }
 
       const paidAmount = orderRes.data.purchase_units?.[0]?.amount?.value || product.priceOnce;
+      const resolvedTier = tierName || 'License';
+      const expiresAt = computeExpiresAt(resolvedTier);
       const licenseKey = createLicenseKey(orderID);
       const downloadToken = createDownloadToken(orderID, productId);
       const downloadUrl = await buildDownloadUrl(baseUrl, downloadToken, product, false);
@@ -181,25 +208,28 @@ exports.handler = async (event) => {
       await saveLicenseRecord({
         licenseKey,
         productId,
-        tierName,
+        tierName: resolvedTier,
         price: paidAmount,
         buyerEmail,
         orderId: orderID,
-        downloadToken
+        downloadToken,
+        expiresAt
       });
 
       await sendPurchaseEmail({
         toEmail: buyerEmail,
         product,
-        tierName: tierName || 'License',
+        tierName: resolvedTier,
         price: paidAmount,
         licenseKey,
+        expiresAt,
         downloadUrl
       });
 
       return jsonResponse(200, {
         success: true,
         licenseKey,
+        expiresAt,
         downloadToken,
         message: 'Payment verified, license saved, and email sent.'
       });
@@ -260,6 +290,7 @@ exports.handler = async (event) => {
       const paid = ['finished', 'confirmed', 'sending'].includes(paymentStatus);
 
       if (paid) {
+        const expiresAt = computeExpiresAt(tierName);
         const licenseKey = createLicenseKey(paymentId);
         const downloadToken = createDownloadToken(paymentId, product.id);
         const downloadUrl = await buildDownloadUrl(baseUrl, downloadToken, product, false);
@@ -271,7 +302,8 @@ exports.handler = async (event) => {
           price,
           buyerEmail,
           orderId: paymentId,
-          downloadToken
+          downloadToken,
+          expiresAt
         });
 
         await sendPurchaseEmail({
@@ -280,6 +312,7 @@ exports.handler = async (event) => {
           tierName,
           price,
           licenseKey,
+          expiresAt,
           downloadUrl
         });
 
@@ -288,6 +321,7 @@ exports.handler = async (event) => {
           paid: true,
           paymentStatus,
           licenseKey,
+          expiresAt,
           downloadToken
         });
       }
@@ -319,7 +353,7 @@ exports.handler = async (event) => {
       return { statusCode: 302, headers: { Location: signedUrl }, body: '' };
     }
 
-    // 6. MT5 5-Device License Check via DynamoDB
+    // 6. MT5 5-Device + Time Limit License Check via DynamoDB
     if (method === 'GET' && pathClean === '/api/verify-device') {
       const { key, device } = query;
       if (!key || !device) {
@@ -335,12 +369,16 @@ exports.handler = async (event) => {
         return { statusCode: 200, body: 'INVALID_KEY' };
       }
 
+      if (isLicenseExpired(res.Item.expiresAt)) {
+        return { statusCode: 200, body: 'EXPIRED' };
+      }
+
       const devices = Array.isArray(res.Item.devices) ? res.Item.devices : [];
       if (devices.includes(device)) {
         return { statusCode: 200, body: 'AUTHORIZED' };
       }
 
-      if (devices.length < 5) {
+      if (devices.length < MAX_DEVICES) {
         await ddb.send(new UpdateCommand({
           TableName: TABLE_NAME,
           Key: { licenseKey: key },
