@@ -1,9 +1,9 @@
-const axios = require('axios');
-const { DynamoDBClient } = require('@aws-sdk/client-dynamodb');
-const { DynamoDBDocumentClient, PutCommand, GetCommand, UpdateCommand } = require('@aws-sdk/lib-dynamodb');
-const { SESClient, SendEmailCommand } = require('@aws-sdk/client-ses');
-const { S3Client, GetObjectCommand } = require('@aws-sdk/client-s3');
-const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
+import axios from 'axios';
+import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
+import { DynamoDBDocumentClient, PutCommand, GetCommand, UpdateCommand } from '@aws-sdk/lib-dynamodb';
+import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
+import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
 const REGION = process.env.AWS_REGION || process.env.SES_REGION || 'us-east-1';
 const TABLE_NAME = process.env.DDB_TABLE_NAME || 'neatforexeas-licenses';
@@ -153,7 +153,7 @@ async function getPayPalAccessToken() {
   return response.data.access_token;
 }
 
-exports.handler = async (event) => {
+export const handler = async (event) => {
   const method = event.requestContext?.http?.method || event.httpMethod || 'GET';
   const rawPath = event.rawPath || event.path || '/';
   const pathClean = rawPath.replace(/^\/[^/]+(?=\/api\/)/, '');
